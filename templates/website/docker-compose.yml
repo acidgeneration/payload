@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   payload:
@@ -6,25 +6,28 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - .:/home/node/app
+      - ./app:/home/node/app
       - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
+    working_dir: /home/node/app
     command: sh -c "yarn install && yarn dev"
     depends_on:
       - mongo
-    env_file:
-      - .env
+    environment:
+      DATABASE_URI: mongodb://mongo:27017/your-database-name
+      PAYLOAD_SECRET: super_secure_jwt_secret
+      CRON_SECRET: super_secure_cron_secret
+      PREVIEW_SECRET: super_secure_preview_secret
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+    restart: unless-stopped
 
   mongo:
-    image: mongo:latest
+    image: arm64v8/mongo:6.0
     ports:
       - '27017:27017'
-    command:
-      - --storageEngine=wiredTiger
+    command: ["--storageEngine=wiredTiger"]
     volumes:
       - data:/data/db
-    logging:
-      driver: none
+    restart: unless-stopped
 
 volumes:
   data:
